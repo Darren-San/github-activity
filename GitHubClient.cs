@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 public class GitHubClient
 {
@@ -12,7 +12,9 @@ public class GitHubClient
     {
         _http = new HttpClient();
 
-        // required by GitHub API
+        // GitHub API requires a User-Agent header on all requests.
+        // It identifies the client making the request.
+        //TODO make this an env variable if we grow this app.
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("CSharpApp");
     }
 
@@ -22,19 +24,19 @@ public class GitHubClient
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync();
-        var eventsJson = JsonDocument.Parse(json).RootElement;
+        var eventsJson = JArray.Parse(json);
 
         var activities = new List<string>();
 
-        foreach (var userEvent in eventsJson.EnumerateArray())
+        foreach (var userEvent in eventsJson)
         {
-            string type = userEvent.GetProperty("type").GetString() ?? "";
-            string repo = userEvent.GetProperty("repo").GetProperty("name").GetString() ?? "unknown-repo";
+            string type = (string?)userEvent["type"] ?? "";
+            string repo = (string?)userEvent["repo"]?["name"] ?? "unknown-repo";
 
             string message = type switch
             {
-                "PushEvent"   => $"- Pushed {userEvent.GetProperty("payload").GetProperty("commits").GetArrayLength()} commits to {repo}",
-                "IssuesEvent" => $"- {userEvent.GetProperty("payload").GetProperty("action").GetString()} an issue in {repo}",
+                "PushEvent"   => $"- Pushed {userEvent["payload"]?["commits"]?.Count() ?? 0} commits to {repo}",
+                "IssuesEvent" => $"- {userEvent["payload"]?["action"]} an issue in {repo}",
                 "WatchEvent"  => $"- Starred {repo}",
                 "ForkEvent"   => $"- Forked {repo}",
                 _             => $"- {type.Replace("Event", "")} in {repo}"

@@ -2,20 +2,32 @@
     "version": "0.2.0",
     "configurations": [
         {
-            // Use IntelliSense to find out which attributes exist for C# debugging
-            // Use hover for the description of the existing attributes
-            // For further information visit https://github.com/dotnet/vscode-csharp/blob/main/debugger-launchjson.md
-            "name": ".NET Core Launch (console)",
+            "name": ".NET Core Launch (console) - Development",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/bin/Debug/net9.0/github-activity.dll",
+            "args": ["naulacambra"],
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Development"
+            }
+        },
+        {
+            "name": ".NET Core Launch (console) - Production",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
             "program": "${workspaceFolder}/bin/Debug/net9.0/github-activity.dll",
             "args": ["kamranahmedse"],
             "cwd": "${workspaceFolder}",
-            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
-            "stopAtEntry": false
+            "stopAtEntry": false,
+            "env": {
+                "DOTNET_ENVIRONMENT": "Production"
+            }
         },
         {
             "name": ".NET Core Attach",

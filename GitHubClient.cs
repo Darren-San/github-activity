@@ -8,14 +8,14 @@ public class GitHubClient
 {
     private readonly HttpClient _http;
 
-    public GitHubClient()
+    public GitHubClient(string userAgent)
     {
         _http = new HttpClient();
 
         // GitHub API requires a User-Agent header on all requests.
         // It identifies the client making the request.
-        //TODO make this an env variable if we grow this app.
-        _http.DefaultRequestHeaders.UserAgent.ParseAdd("CSharpApp");
+        _http.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
+
     }
 
     public async Task<List<string>> GetUserActivity(string username)

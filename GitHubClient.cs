@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using GitHubActivityApp.Models;
 
 public class GitHubClient
 {
@@ -15,7 +16,6 @@ public class GitHubClient
         // GitHub API requires a User-Agent header on all requests.
         // It identifies the client making the request.
         _http.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
-
     }
 
     public async Task<List<string>> GetUserActivity(string username)
@@ -24,22 +24,19 @@ public class GitHubClient
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync();
-        var eventsJson = JArray.Parse(json);
+        var events = JsonConvert.DeserializeObject<List<GitHubActivity>>(json) ?? [];
 
         var activities = new List<string>();
 
-        foreach (var userEvent in eventsJson)
+        foreach (var userEvent in events)
         {
-            string type = (string?)userEvent["type"] ?? "";
-            string repo = (string?)userEvent["repo"]?["name"] ?? "unknown-repo";
-
-            string message = type switch
+            string message = userEvent.Type switch
             {
-                "PushEvent"   => $"- Pushed {userEvent["payload"]?["commits"]?.Count() ?? 0} commits to {repo}",
-                "IssuesEvent" => $"- {userEvent["payload"]?["action"]} an issue in {repo}",
-                "WatchEvent"  => $"- Starred {repo}",
-                "ForkEvent"   => $"- Forked {repo}",
-                _             => $"- {type.Replace("Event", "")} in {repo}"
+                "PushEvent"   => $"- Pushed {userEvent.CommitCount} commits to {userEvent.RepoName}",
+                "IssuesEvent" => $"- {userEvent.Action} an issue in {userEvent.RepoName}",
+                "WatchEvent"  => $"- Starred {userEvent.RepoName}",
+                "ForkEvent"   => $"- Forked {userEvent.RepoName}",
+                _             => $"- {userEvent.Type.Replace("Event", "")} in {userEvent.RepoName}"
             };
 
             activities.Add(message);

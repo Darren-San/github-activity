@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using GitHubActivityApp.Models;
+using Microsoft.Extensions.Configuration;
 using System.IO;
 using System.Threading.Tasks;
 using System;
@@ -16,7 +17,7 @@ class Program
         // Determine environment (default = Production)
         var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
 
-        // Cancelar al pulsar Ctrl+C
+        // Cancel on Ctrl+C
         Console.CancelKeyPress += (sender, eventArgs) =>
         {
             Console.WriteLine("Cancellation requested...");
@@ -32,12 +33,11 @@ class Program
             .AddEnvironmentVariables()
             .Build();
 
-        config.GetSection("GitHub");
-
-        //TODO investigar como hacer bind de una sección de config
-        // Read value from config
-        var userAgent = config["GitHub:UserAgent"]
-            ?? throw new InvalidOperationException("GitHub:UserAgent is missing in configuration.");
+        var gitHubConfig = new GitHubConfiguration
+        {
+            UserAgent = config.GetSection("GitHub")["UserAgent"]
+                        ?? throw new InvalidOperationException("GitHub:UserAgent is missing in configuration.")
+        };
 
         if (args.Length == 0)
         {
@@ -46,7 +46,7 @@ class Program
         }
 
         string username = args[0];
-        var client = new GitHubClient(userAgent);
+        var client = new GitHubClient(gitHubConfig.UserAgent);
 
         try
         {

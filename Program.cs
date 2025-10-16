@@ -8,10 +8,10 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        //CancellationTokenSource holds unmanaged resources internally (like
-        //timers for timeouts). If you don’t dispose it, those resources might
-        //linger until garbage collection, which could lead to subtle memory
-        //leaks in long-running apps.
+        // CancellationTokenSource holds unmanaged resources internally (like
+        // timers for timeouts). If you don’t dispose it, those resources might
+        // linger until garbage collection, which could lead to subtle memory
+        // leaks in long-running apps.
         using var cancellationTokenSource = new CancellationTokenSource();
 
         // Determine environment (default = Production)
@@ -46,17 +46,24 @@ class Program
         }
 
         string username = args[0];
+
         var client = new GitHubClient(gitHubConfig.UserAgent);
 
         try
         {
-            var activities = await client.GetUserActivity(username);
+            var activities = await client.GetUserActivity(username, cancellationTokenSource.Token);
 
             foreach (var activity in activities)
             {
                 Console.WriteLine(activity);
             }
         }
+
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("\nOperation cancelled by user.");
+        }
+
         catch (Exception ex)
         {
             Console.WriteLine($"Error: {ex.Message}");

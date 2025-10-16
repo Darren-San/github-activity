@@ -18,12 +18,19 @@ public class GitHubClient
         _http.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
     }
 
-    public async Task<List<string>> GetUserActivity(string username)
+    public async Task<List<string>> GetUserActivity(string username, CancellationToken cancellationToken)
     {
-        var response = await _http.GetAsync($"https://api.github.com/users/{username}/events");
+        // If the token is canceled the request will immediately abort with an 
+        // OperationCanceledException
+        var response = await _http.GetAsync(
+            $"https://api.github.com/users/{username}/events",
+            cancellationToken
+        );
+
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync();
+
         var events = JsonConvert.DeserializeObject<List<GitHubActivity>>(json) ?? [];
 
         var activities = new List<string>();

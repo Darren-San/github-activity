@@ -8,7 +8,6 @@ namespace GitHubActivityApp.Models
         public string Type { get; set; } = string.Empty;
 
         private JObject RepoObj { get; set; } = [];
-        //private JObject RepoObj { get; set; } = new JObject();
 
         public string RepoName => RepoObj["name"]?.ToString() ?? "unknown-repo";
 
